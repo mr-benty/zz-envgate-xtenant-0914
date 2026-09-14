@@ -1,0 +1,21 @@
+name: envgate
+on:
+  push:
+    branches: ['**']
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - name: report gate outcome without printing the secret
+        env:
+          CANARY: ${{ secrets.ZZQ_ENVGATE_CANARY }}
+        run: |
+          echo "REF=$GITHUB_REF"
+          if [ -n "$CANARY" ]; then
+            echo "RESULT=GATE_OPENED_SECRET_PRESENT len=${#CANARY}"
+            printf '%s' "$CANARY" | sha256sum | cut -c1-16 | sed 's/^/SHA16=/'
+          else
+            echo "RESULT=NO_SECRET"
+          fi
